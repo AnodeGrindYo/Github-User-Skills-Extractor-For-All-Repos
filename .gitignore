@@ -1,0 +1,40 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pkl
+*.so
+*.egg
+*.egg-info/
+*.manifest
+*.spec
+
+# --- Environnements virtuels ---
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+
+# --- Jupyter / IPython ---
+.ipynb_checkpoints/
+
+# --- IDE / Éditeurs ---
+.vscode/
+.idea/
+*.swp
+*~
+
+# --- Logs / Temp ---
+*.log
+*.tmp
+*.bak
+
+# --- Env / Secrets ---
+.env
+.env.*
+
+# --- Outputs du script ---
+skills.json
+cv_skills.md
