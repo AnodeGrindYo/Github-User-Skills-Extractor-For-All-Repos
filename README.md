@@ -40,17 +40,4 @@ python -m cvskills_extractor.cli --username TonPseudo --token ghp_xxx
 
 Les fichiers `cv_skills.md` et `skills.json` seront générés dans le répertoire courant.
 
-## Architecture
 
-- `config.py` : constantes & paramètres
-- `utils.py` : utilitaires (exclusions, regex, temps)
-- `github_http.py` : client GitHub minimal
-- `evidence.py` : modèles de données & agrégation
-- `rules.py` : correspondances fichiers/dépendances → compétences
-- `analyzer.py` : analyse d'un repository
-- `miner.py` : orchestration multi‑repos + rendu (Markdown/JSON)
-- `cli.py` : point d'entrée (env `.env`, arguments, erreurs claires)
-
-## Licence
-
-MIT
