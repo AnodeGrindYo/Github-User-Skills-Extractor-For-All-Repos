@@ -1,166 +1,56 @@
-# 📊 GitHub Portfolio Skill Extractor
+# cvskills_extractor
 
-Ce projet est un **outil Python** qui parcourt automatiquement vos repositories GitHub (publics et privés, si votre token le permet), analyse leur contenu et en déduit les **compétences techniques démontrées**.  
+Exploration de repositories GitHub pour inférer des **compétences démontrées** à partir de :
+- Langages détectés par l'API GitHub
+- Fichiers indicateurs (Dockerfile, Jenkinsfile, manifests K8s, etc.)
+- Dépendances (Python via `pyproject.toml`/`requirements*.txt`, JavaScript via `package.json`)
+- Heuristiques (recence, popularité)
 
-Il génère deux fichiers de sortie :  
-- `cv_skills.md` → résumé lisible en Markdown (avec toutes les preuves)  
-- `skills.json` → export structuré et exploitable par d’autres outils  
+Sorties :
+- `cv_skills.md` : aperçu Markdown synthétique + **toutes les preuves détaillées**
+- `skills.json` : données structurées (score, nb de repos, explications)
 
----
+## Installation
 
-## 🚀 Fonctionnement
-
-### 1. Collecte des repositories
-L’outil se connecte à l’API GitHub via votre **token personnel**.  
-- Il liste vos repositories (hors forks et archives).  
-- Il peut exclure certains dépôts (ex. démos, cours, exercices) via des regex définies dans `.env`.
-
-### 2. Analyse de chaque repository
-Pour chaque repo, plusieurs signaux sont utilisés :  
-
-- **Langages déclarés** par GitHub (`/languages`)  
-  - Pondérés faiblement, ignorés si < 8 % du code  
-- **Présence de fichiers clés**  
-  - `Dockerfile`, `.github/workflows/*`, `pyproject.toml`, `package.json`, `pom.xml`, etc.  
-  - Déduisent des compétences spécifiques (Docker, GitHub Actions, Python, Node.js, etc.)  
-- **Dépendances déclarées**  
-  - Python : `requirements.txt`, `pyproject.toml` (Poetry, PEP 621)  
-  - JS/TS : `package.json`  
-  - Java : `pom.xml`, `build.gradle`  
-- **Manifests Kubernetes / Helm**  
-- **Recency & Popularity**  
-  - Score ajusté selon la **fraîcheur des commits** et la **popularité** (stars, forks)  
-
-### 3. Pondération & preuves
-Chaque détection est stockée comme une **preuve** :  
-- `skill` (compétence identifiée)  
-- `repo` (projet dans lequel elle est trouvée)  
-- `weight` (poids/scoring)  
-- `why` (raison précise : fichier, dépendance, etc.)  
-
-Des plafonds évitent qu’un seul repo “gonfle artificiellement” un skill (ex. Jupyter est limité à 2.0 points max par repo).
-
----
-
-## ⚙️ Installation
-
-1. **Cloner le repo**
-```bash
-git clone https://github.com/ton-compte/auto_github_repo_extract.git
-cd auto_github_repo_extract
-```
-
-2. **Créer un environnement virtuel**
 ```bash
 python -m venv .venv
-source .venv/bin/activate  # Linux/macOS
-.venv\Scripts\activate     # Windows PowerShell
-```
-
-3. **Installer les dépendances**
-```bash
+# Windows:   .venv\Scripts\activate
+# Linux/Mac: source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-4. **Configurer les variables d’environnement**
-Créer un fichier `.env` :
+## Configuration
+
+Créez un fichier `.env` à la racine (ou exportez des variables d'environnement) :
 ```ini
 GITHUB_USERNAME=TonPseudo
-GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxx
-# Optionnel : exclure des repos par regex
-EXCLUDE_REPOS=^angular_,phonecat,(-|_)exercices?
+GITHUB_TOKEN=ghp_xxx
+# Optionnel: patterns regex séparés par des virgules pour exclure certains repos
+EXCLUDE_REPOS=^fork-.*, (demo|playground)$
 ```
 
-5. **Exécuter le script**
+## Utilisation
+
 ```bash
-python extract_cv_skills.py
+# Depuis la racine du repo
+python -m cvskills_extractor.cli
+# OU
+python -m cvskills_extractor.cli --username TonPseudo --token ghp_xxx
 ```
 
----
+Les fichiers `cv_skills.md` et `skills.json` seront générés dans le répertoire courant.
 
-## 📂 Fichiers générés
+## Architecture
 
-### 1. `cv_skills.md`
-Fichier lisible en Markdown, adapté à une intégration dans un CV ou portfolio.
+- `config.py` : constantes & paramètres
+- `utils.py` : utilitaires (exclusions, regex, temps)
+- `github_http.py` : client GitHub minimal
+- `evidence.py` : modèles de données & agrégation
+- `rules.py` : correspondances fichiers/dépendances → compétences
+- `analyzer.py` : analyse d'un repository
+- `miner.py` : orchestration multi‑repos + rendu (Markdown/JSON)
+- `cli.py` : point d'entrée (env `.env`, arguments, erreurs claires)
 
-Structure :  
-```markdown
-## Compétences démontrées par mes repositories
-**Langages** : Python, JavaScript, TypeScript
-**Frameworks & Libs** : React, Django, FastAPI
-**DevOps & Cloud** : Docker, Kubernetes, GitHub Actions
+## Licence
 
-<details open><summary><strong>Preuves complètes (toutes)</strong></summary>
-
-### Python  
-Score total: 12.4 • Repos distincts: 6
-- Projet1: File hint: pyproject.toml (+0.40)
-- Projet2: requirements: pandas (+1.60)
-- Projet3: pyproject dep: scikit-learn (+1.80)
-
-### Docker  
-Score total: 6.2 • Repos distincts: 3
-- ProjetA: File hint: Dockerfile (+2.00)
-- ProjetB: File hint: docker-compose.yml (+2.00)
-
-...
-</details>
-```
-
-👉 Chaque compétence inclut :  
-- **Score total** : somme des poids attribués  
-- **Repos distincts** : nombre de projets où la compétence est démontrée  
-- **Preuves détaillées** : fichiers/dépendances qui justifient la détection  
-
----
-
-### 2. `skills.json`
-Export structuré pour exploitation automatique (dashboards, scripts…).
-
-Exemple :  
-```json
-{
-  "generated_at": "2025-08-28T12:34:56",
-  "skills": [
-    {
-      "skill": "Python",
-      "score": 12.4,
-      "repos": 6,
-      "evidence": [
-        "- Projet1: File hint: pyproject.toml (+0.40)",
-        "- Projet2: requirements: pandas (+1.60)",
-        "- Projet3: pyproject dep: scikit-learn (+1.80)"
-      ]
-    },
-    {
-      "skill": "Docker",
-      "score": 6.2,
-      "repos": 3,
-      "evidence": [
-        "- ProjetA: File hint: Dockerfile (+2.00)",
-        "- ProjetB: File hint: docker-compose.yml (+2.00)"
-      ]
-    }
-  ]
-}
-```
-
-Champs :  
-- `skill` : nom de la compétence  
-- `score` : score pondéré total  
-- `repos` : nombre de dépôts distincts  
-- `evidence` : liste exhaustive des preuves collectées  
-
----
-
-## 🔧 Personnalisation
-
-- **Exclure des repos** : via regex dans `.env` (`EXCLUDE_REPOS`)  
-- **Ajuster les poids** : modifier les constantes dans le code (`FILE_HINTS`, `LANG_MIN_FRACTION`, etc.)  
-- **Ajouter de nouvelles règles** : enrichir `SkillRules` (nouveaux frameworks, libs, patterns de fichiers…)  
-
----
-
-## 📜 Licence
-
-Projet open-source — libre à toi de le modifier pour ton usage personnel ou pro.
+MIT

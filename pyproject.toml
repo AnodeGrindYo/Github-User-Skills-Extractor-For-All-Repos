@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cvskills-extractor"
+version = "0.1.0"
+description = "Infère des compétences démontrées à partir de vos repos GitHub (Markdown + JSON)."
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "Your Name" }]
+license = { text = "MIT" }
+dependencies = [
+    "python-dotenv>=1.0.1",
+]
