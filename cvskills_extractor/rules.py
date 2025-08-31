@@ -173,7 +173,9 @@ class SkillRules:
         (r"(^|/)k8s/.+\\.ya?ml$", "Kubernetes", 2.0),
         (r"(^|/)manifests?/.+\\.ya?ml$", "Kubernetes", 1.6),
         (r"(^|/)kustomization\\.ya?ml$", "Kustomize", 1.8),
-        (r"(^|/)charts/.*/Chart\\.ya?ml$", "Helm", 2.0),
+        # (r"(^|/)charts/.*/Chart\\.ya?ml$", "Helm", 2.0),
+        # Helm (robuste Windows/Linux + sous-dossiers)
+        (r"(^|[\\/])charts([\\/].+)?[\\/]Chart\.ya?ml$", "Helm", 2.0),
         (r"(^|/)charts/.*/values\\.ya?ml$", "Helm", 1.6),
         (r"(^|/)skaffold\\.ya?ml$", "Skaffold", 1.6),
         (r"(^|/)Tiltfile$", "Tilt", 1.4),
